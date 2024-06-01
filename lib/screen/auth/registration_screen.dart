@@ -1,10 +1,17 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
+import 'package:sayble/api/environment.dart';
 import 'package:sayble/fonts/sayble_icons.dart';
 import 'package:sayble/screen/auth/login_screen.dart';
+import 'package:sayble/screen/auth/verification_otp_screen.dart';
 import 'package:sayble/util/swipe_page_route.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
@@ -84,20 +91,56 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       );
       return;
     } else {
+      _sendCode();
+    }
+  }
 
+  Future<void> _sendCode() async {
+    final response = await http.post(
+      Uri.parse("${Environment.apiUrl}/auth/create"),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(
+        <String, String>{
+          'firstName': _firstNameController.text,
+          'lastName': _lastNameController.text,
+          'email': _emailController.text,
+          'dob': _dateController.text,
+        },
+      ),
+    );
+
+    if (response.statusCode == 200) {
+      final responseData = jsonDecode(response.body);
+
+      if (responseData['success']) {
+        final apiToken = responseData['token'];
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('apiToken', apiToken);
+        Environment.userToken = apiToken;
+        Navigator.push(
+          context,
+          SwipePageRoute(
+            builder: (context) => VerificationOtpScreen(
+              email: _emailController.text,
+            ),
+            currentChild: const RegistrationScreen(),
+            routeAnimation: RouteAnimation.vertical,
+          ),
+        );
+      } else {
+        log('Registration failed: ${responseData['message']}');
+      }
+    } else {
+      log('Failed to register. Status code: ${response.statusCode}');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery
-        .of(context)
-        .size
-        .width;
-    double height = MediaQuery
-        .of(context)
-        .size
-        .height;
+    double width = MediaQuery.of(context).size.width;
+    double height = MediaQuery.of(context).size.height;
 
     return KeyboardVisibilityProvider(
       child: Scaffold(
@@ -143,9 +186,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.8),
                         fontSize: width * 0.056,
-                        fontFamily: GoogleFonts
-                            .aBeeZee()
-                            .fontFamily,
+                        fontFamily: GoogleFonts.aBeeZee().fontFamily,
                         fontWeight: FontWeight.w400,
                       ),
                     ),
@@ -178,9 +219,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                     fontSize: width * 0.16,
                                     letterSpacing: 1.2,
                                     fontFamily:
-                                    GoogleFonts
-                                        .aBeeZee()
-                                        .fontFamily,
+                                        GoogleFonts.aBeeZee().fontFamily,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -219,14 +258,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                       ),
                                       enabledBorder: OutlineInputBorder(
                                         borderRadius:
-                                        BorderRadius.circular(width * 0.04),
+                                            BorderRadius.circular(width * 0.04),
                                         borderSide: BorderSide(
                                           color: Colors.white.withOpacity(0.8),
                                         ),
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderRadius:
-                                        BorderRadius.circular(width * 0.04),
+                                            BorderRadius.circular(width * 0.04),
                                         borderSide: BorderSide(
                                           color: Colors.white.withOpacity(0.8),
                                         ),
@@ -236,7 +275,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                     keyboardType: TextInputType.name,
                                     controller: _firstNameController,
                                     textCapitalization:
-                                    TextCapitalization.words,
+                                        TextCapitalization.words,
                                     style: TextStyle(
                                       color: Colors.white.withOpacity(0.8),
                                       fontSize: width * 0.04,
@@ -259,14 +298,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                       ),
                                       enabledBorder: OutlineInputBorder(
                                         borderRadius:
-                                        BorderRadius.circular(width * 0.04),
+                                            BorderRadius.circular(width * 0.04),
                                         borderSide: BorderSide(
                                           color: Colors.white.withOpacity(0.8),
                                         ),
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderRadius:
-                                        BorderRadius.circular(width * 0.04),
+                                            BorderRadius.circular(width * 0.04),
                                         borderSide: BorderSide(
                                           color: Colors.white.withOpacity(0.8),
                                         ),
@@ -276,7 +315,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                     keyboardType: TextInputType.name,
                                     controller: _lastNameController,
                                     textCapitalization:
-                                    TextCapitalization.words,
+                                        TextCapitalization.words,
                                     style: TextStyle(
                                       color: Colors.white.withOpacity(0.8),
                                       fontSize: width * 0.04,
@@ -300,14 +339,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius:
-                                  BorderRadius.circular(width * 0.04),
+                                      BorderRadius.circular(width * 0.04),
                                   borderSide: BorderSide(
                                     color: Colors.white.withOpacity(0.8),
                                   ),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius:
-                                  BorderRadius.circular(width * 0.04),
+                                      BorderRadius.circular(width * 0.04),
                                   borderSide: BorderSide(
                                     color: Colors.white.withOpacity(0.8),
                                   ),
@@ -343,14 +382,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                     ),
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius:
-                                      BorderRadius.circular(width * 0.04),
+                                          BorderRadius.circular(width * 0.04),
                                       borderSide: BorderSide(
                                         color: Colors.white.withOpacity(0.8),
                                       ),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius:
-                                      BorderRadius.circular(width * 0.04),
+                                          BorderRadius.circular(width * 0.04),
                                       borderSide: BorderSide(
                                         color: Colors.white.withOpacity(0.8),
                                       ),
@@ -381,7 +420,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                   horizontal: width * 0.064),
                               shape: RoundedRectangleBorder(
                                 borderRadius:
-                                BorderRadius.circular(width * 0.032),
+                                    BorderRadius.circular(width * 0.032),
                               ),
                             ),
                             icon: Icon(
@@ -409,9 +448,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                 style: TextStyle(
                                   color: Colors.white.withOpacity(0.8),
                                   fontSize: width * 0.042,
-                                  fontFamily: GoogleFonts
-                                      .fredoka()
-                                      .fontFamily,
+                                  fontFamily: GoogleFonts.fredoka().fontFamily,
                                   fontWeight: FontWeight.w400,
                                 ),
                                 children: [
@@ -423,11 +460,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                           context,
                                           SwipePageRoute(
                                             builder: (context) =>
-                                            const LoginScreen(),
+                                                const LoginScreen(),
                                             currentChild:
-                                            const RegistrationScreen(),
+                                                const RegistrationScreen(),
                                             routeAnimation:
-                                            RouteAnimation.vertical,
+                                                RouteAnimation.vertical,
                                           ),
                                         );
                                       },
@@ -436,9 +473,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                       color: Colors.white,
                                       fontSize: width * 0.042,
                                       fontFamily:
-                                      GoogleFonts
-                                          .fredoka()
-                                          .fontFamily,
+                                          GoogleFonts.fredoka().fontFamily,
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),

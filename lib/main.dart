@@ -1,7 +1,9 @@
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sayble/api/environment.dart';
+import 'package:sayble/screen/profile_screen.dart';
 import 'package:sayble/screen/welcome_screen.dart';
 import 'package:sayble/themes/theme.dart';
 import 'package:sayble/themes/util.dart';
@@ -43,12 +45,14 @@ class Sayble extends StatelessWidget {
       theme: theme.light(),
       darkTheme: theme.dark(),
       themeMode: ThemeMode.dark,
-      home: const WelcomeScreen(),
+      home: Environment.userToken==''
+          ? const WelcomeScreen()
+          : const ProfileScreen(),
     );
   }
 
   getUserToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    Environment.userToken = prefs.getString('userToken') ?? '';
+    Environment.userToken = prefs.getString('apiToken') ?? '';
   }
 }
