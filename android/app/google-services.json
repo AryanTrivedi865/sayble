@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "468964501758",
+    "firebase_url": "https://sayble-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "sayble",
+    "storage_bucket": "sayble.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:468964501758:android:3dc5e2c29482aeb0e61daf",
+        "android_client_info": {
+          "package_name": "com.aryan.sayble"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "468964501758-e593me2uqddlb0ou2svact4fpaleu7dm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDGkUW-K3R2aUTBRORbe1m_zFxVXHU3vno"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "468964501758-e593me2uqddlb0ou2svact4fpaleu7dm.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
