@@ -94,7 +94,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       );
     }
   }
-// change
+// change the url to the correct url
   sendCode() async {
     final Response = await http.post(
         Uri.parse('${Environment.apiUrl}/'), body: {
