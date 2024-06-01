@@ -2,11 +2,9 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:sayble/api/environment.dart';
 import 'package:sayble/fonts/sayble_icons.dart';
 import 'package:sayble/screen/auth/login_screen.dart';
 import 'package:sayble/util/swipe_page_route.dart';
-import 'package:http/http.dart' as http;
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
