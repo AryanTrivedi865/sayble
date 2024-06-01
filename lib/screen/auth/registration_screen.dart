@@ -86,11 +86,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       );
       return;
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Verification code sent to your email address"),
-        ),
-      );
+
     }
   }
 

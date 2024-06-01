@@ -267,62 +267,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ),
-                        SizedBox(height: width * 0.032),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              width: width * 0.32,
-                              height: 1,
-                              color: Colors.white.withOpacity(0.8),
-                            ),
-                            SizedBox(width: width * 0.032),
-                            Text(
-                              "Or",
-                              style: TextStyle(
-                                color: Colors.white.withOpacity(0.8),
-                                fontSize: width * 0.042,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                            SizedBox(width: width * 0.032),
-                            Container(
-                              width: width * 0.32,
-                              height: 1,
-                              color: Colors.white.withOpacity(0.8),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: width * 0.032),
-                        SizedBox(
-                          width: width,
-                          child: ElevatedButton.icon(
-                            onPressed: () {},
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              padding: EdgeInsets.symmetric(
-                                  vertical: width * 0.032,
-                                  horizontal: width * 0.064),
-                              shape: RoundedRectangleBorder(
-                                borderRadius:
-                                BorderRadius.circular(width * 0.032),
-                              ),
-                            ),
-                            icon: Icon(
-                              FontAwesomeIcons.google,
-                              color: Colors.black,
-                              size: width * 0.046,
-                            ),
-                            label: Text(
-                              "Sign in with Google",
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: width * 0.046,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                          ),
-                        ),
                         SizedBox(height: width * 0.064),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
