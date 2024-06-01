@@ -5,7 +5,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:sayble/api/environment.dart';
 import 'package:sayble/fonts/sayble_icons.dart';
 import 'package:sayble/screen/auth/login_screen.dart';
-import 'package:sayble/screen/auth/verification_otp_screen.dart';
 import 'package:sayble/util/swipe_page_route.dart';
 import 'package:http/http.dart' as http;
 
@@ -93,17 +92,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         ),
       );
     }
-  }
-// change the url to the correct url
-  sendCode() async {
-    final Response = await http.post(
-        Uri.parse('${Environment.apiUrl}/'), body: {
-      'firstName': _firstNameController.text,
-      'lastName':_lastNameController.text,
-      'username':_emailController.text.split('@')[0],
-      'email':_emailController.text,
-      'dob':_dateController.text,
-    });
   }
 
   @override
