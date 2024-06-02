@@ -7,16 +7,38 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sayble/api/login.dart';
 import 'package:sayble/api/user.dart';
+import 'package:sayble/models/user_model.dart';
 import 'package:sayble/screen/profile_tabs/posts_screen.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
   static const platform = MethodChannel('com.aryan.sayble/share');
 
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+
+  late UserModel user;
+
+  @override
+  void initState() {
+    getProfile();
+    super.initState();
+  }
+
+  getProfile() async {
+    UserModel user = await User.getCurrentUser();
+    setState(() {
+      this.user = user;
+    });
+  }
+
   Future<void> _shareText(String text, BuildContext context) async {
     try {
-      await platform.invokeMethod('shareText', {'text': text});
+      await ProfileScreen.platform.invokeMethod('shareText', {'text': text});
     } on PlatformException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -30,14 +52,13 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
-
     return DefaultTabController(
       length: 3,
       child: Scaffold(
         appBar: AppBar(
           leading: const Icon(CupertinoIcons.back),
           title: Text(
-            "aryan_.__",
+            user.username!,
             style: GoogleFonts.fredoka(
               color: Colors.white,
               fontSize: width * 0.048,
@@ -84,9 +105,11 @@ class ProfileScreen extends StatelessWidget {
                                         decoration: BoxDecoration(
                                           borderRadius: BorderRadius.circular(
                                               width * 0.02),
-                                          image: const DecorationImage(
-                                            image: AssetImage(
-                                                "lib/assets/jpegs/profile.jpg"),
+                                          image: DecorationImage(
+                                            image: user.image != null
+                                                ? NetworkImage(user.image!)
+                                                : const AssetImage(
+                                                    "lib/assets/jpegs/profile.jpg"),
                                             fit: BoxFit.cover,
                                           ),
                                         ),
@@ -98,8 +121,9 @@ class ProfileScreen extends StatelessWidget {
                             },
                             child: CircleAvatar(
                               radius: width * 0.1,
-                              backgroundImage: const AssetImage(
-                                  "lib/assets/jpegs/profile.jpg"),
+                              backgroundImage: user.image != null
+                                  ? NetworkImage(user.image!)
+                                  : const AssetImage("lib/assets/jpegs/profile.jpg"),
                             ),
                           ),
                           Positioned(
@@ -302,7 +326,7 @@ class ProfileScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
-                        "John Doe",
+                        "${user.firstName!} ${user.lastName!}",
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: width * 0.056,
@@ -326,7 +350,7 @@ class ProfileScreen extends StatelessWidget {
                         ),
                         onPressed: () {
                           _shareText(
-                              "Check out this amazing profile on Instagram: John Doe username: aryan_.__",
+                              "Check out this amazing profile on Instagram: ${user.username}",
                               context);
                         },
                       ),
