@@ -1,17 +1,11 @@
-import 'dart:convert';
-import 'dart:developer';
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:http/http.dart' as http;
-import 'package:sayble/api/environment.dart';
+import 'package:sayble/api/registration.dart';
 import 'package:sayble/fonts/sayble_icons.dart';
 import 'package:sayble/screen/auth/login_screen.dart';
-import 'package:sayble/screen/auth/verification_otp_screen.dart';
 import 'package:sayble/util/swipe_page_route.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
@@ -25,6 +19,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   late TextEditingController _lastNameController;
   late TextEditingController _emailController;
   late TextEditingController _dateController;
+
+  bool _isRegistering = false;
 
   @override
   void initState() {
@@ -91,49 +87,20 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       );
       return;
     } else {
-      _sendCode();
-    }
-  }
-
-  Future<void> _sendCode() async {
-    final response = await http.post(
-      Uri.parse("${Environment.apiUrl}/auth/create"),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(
-        <String, String>{
-          'firstName': _firstNameController.text,
-          'lastName': _lastNameController.text,
-          'email': _emailController.text,
-          'dob': _dateController.text,
-        },
-      ),
-    );
-
-    if (response.statusCode == 200) {
-      final responseData = jsonDecode(response.body);
-
-      if (responseData['success']) {
-        final apiToken = responseData['token'];
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('apiToken', apiToken);
-        Environment.userToken = apiToken;
-        Navigator.push(
-          context,
-          SwipePageRoute(
-            builder: (context) => VerificationOtpScreen(
-              email: _emailController.text,
-            ),
-            currentChild: const RegistrationScreen(),
-            routeAnimation: RouteAnimation.vertical,
-          ),
-        );
-      } else {
-        log('Registration failed: ${responseData['message']}');
-      }
-    } else {
-      log('Failed to register. Status code: ${response.statusCode}');
+      setState(() {
+        _isRegistering = true;
+      });
+      Register.sendCode(
+        _firstNameController.text,
+        _lastNameController.text,
+        _emailController.text,
+        _dateController.text,
+        context,
+      ).then((value) {
+        setState(() {
+          _isRegistering = false;
+        });
+      });
     }
   }
 
@@ -409,34 +376,57 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         SizedBox(height: width * 0.1),
                         SizedBox(
                           width: width,
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              _register();
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              padding: EdgeInsets.symmetric(
-                                  vertical: width * 0.032,
-                                  horizontal: width * 0.064),
-                              shape: RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.circular(width * 0.032),
-                              ),
-                            ),
-                            icon: Icon(
-                              Icons.login_rounded,
-                              color: Colors.black,
-                              size: width * 0.046,
-                            ),
-                            label: Text(
-                              "Register",
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: width * 0.046,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                          ),
+                          child: _isRegistering
+                              ? Container(
+                                  width: width,
+                                  height: width * 0.134,
+                                  decoration: BoxDecoration(
+                                    borderRadius:
+                                        BorderRadius.circular(width * 0.036),
+                                    color: Colors.white,
+                                  ),
+                                  child: Container(
+                                    alignment: Alignment.center,
+                                    child: SizedBox(
+                                      width: width * 0.08,
+                                      height: width * 0.08,
+                                      child: const CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                                Colors.black87),
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : ElevatedButton.icon(
+                                  onPressed: () {
+                                    _register();
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.white,
+                                    padding: EdgeInsets.symmetric(
+                                        vertical: width * 0.032,
+                                        horizontal: width * 0.064),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(width * 0.032),
+                                    ),
+                                  ),
+                                  icon: Icon(
+                                    Icons.login_rounded,
+                                    color: Colors.black,
+                                    size: width * 0.046,
+                                  ),
+                                  label: Text(
+                                    "Register",
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: width * 0.046,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                ),
                         ),
                         SizedBox(height: width * 0.064),
                         Row(

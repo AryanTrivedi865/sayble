@@ -1,13 +1,9 @@
-import 'dart:convert';
-
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:http/http.dart' as http;
-import 'package:sayble/api/environment.dart';
+import 'package:sayble/api/registration.dart';
 import 'package:sayble/fonts/sayble_icons.dart';
-import 'package:sayble/screen/profile_screen.dart';
 import 'package:sayble/util/otp_text_field.dart';
-import 'package:sayble/util/swipe_page_route.dart';
 
 class VerificationOtpScreen extends StatefulWidget {
   final String email;
@@ -19,7 +15,6 @@ class VerificationOtpScreen extends StatefulWidget {
 }
 
 class _VerificationOtpScreenState extends State<VerificationOtpScreen> {
-
   String otp = '';
 
   @override
@@ -113,9 +108,9 @@ class _VerificationOtpScreenState extends State<VerificationOtpScreen> {
                     numberOfFields: 6,
                     onSubmit: (String value) {
                       setState(() {
-                        otp=value;
+                        otp = value;
                       });
-                      _verifyOtp(value);
+                      Register.verifyOtp(value, context);
                     },
                   ),
                   SizedBox(
@@ -125,7 +120,7 @@ class _VerificationOtpScreenState extends State<VerificationOtpScreen> {
                     width: width,
                     child: ElevatedButton(
                       onPressed: () {
-                        _verifyOtp(otp);
+                        Register.verifyOtp(otp, context);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
@@ -156,6 +151,10 @@ class _VerificationOtpScreenState extends State<VerificationOtpScreen> {
                       ),
                       children: [
                         TextSpan(
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () {
+                              Register.resendCode(context);
+                            },
                           text: "Resend",
                           style: TextStyle(
                             decoration: TextDecoration.underline,
@@ -174,62 +173,5 @@ class _VerificationOtpScreenState extends State<VerificationOtpScreen> {
         ],
       ),
     );
-  }
-
-  Future<void> _verifyOtp(String otp) async {
-    try {
-      final response = await http.post(
-        Uri.parse("${Environment.apiUrl}/users/verify"),
-        headers: {
-          'Content-Type': 'application/json; charset=UTF-8',
-          "Authorization": "Bearer ${Environment.userToken}",
-        },
-        body: jsonEncode({
-          "OTP": otp,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        try {
-          final responseData = jsonDecode(response.body);
-
-          if (responseData["success"] == true) {
-            Navigator.push(
-              context,
-              SwipePageRoute(
-                builder: (context) => const ProfileScreen(),
-                routeAnimation: RouteAnimation.horizontal,
-                currentChild: widget,
-              ),
-            );
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text("Invalid OTP"),
-              ),
-            );
-          }
-        } catch (e) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Unexpected response format"),
-            ),
-          );
-        }
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                "Failed to verify OTP. Status code: ${response.statusCode}"),
-          ),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("An error occurred: $e"),
-        ),
-      );
-    }
   }
 }

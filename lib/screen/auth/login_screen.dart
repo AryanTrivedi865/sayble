@@ -1,9 +1,8 @@
-import 'dart:developer';
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:sayble/api/login.dart';
 import 'package:sayble/fonts/sayble_icons.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -15,14 +14,24 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   bool obscureText = true;
-  TextEditingController emailController = TextEditingController();
+  bool _isLoggingIn = false;
+  TextEditingController usernameController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
 
   void _login() {
-    String email = emailController.text;
-    String password = passwordController.text;
-    if (email.isNotEmpty && password.isNotEmpty) {
-      log("Email: $email, Password: $password");
+    String username = usernameController.text.trim();
+    String password = passwordController.text.trim();
+
+    if (username.isNotEmpty && password.isNotEmpty) {
+      setState(() {
+        _isLoggingIn = true;
+      });
+
+      Login.login(username, password, context).then((value) {
+        setState(() {
+          _isLoggingIn = false;
+        });
+      });
     }
     else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -150,7 +159,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           children: [
                             TextField(
                               decoration: InputDecoration(
-                                hintText: "Email",
+                                hintText: "Username",
                                 contentPadding: EdgeInsets.symmetric(
                                     vertical: width * 0.048,
                                     horizontal: width * 0.064),
@@ -175,6 +184,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ),
                               textInputAction: TextInputAction.next,
+                              controller: usernameController,
                               keyboardType: TextInputType.emailAddress,
                               style: TextStyle(
                                 color: Colors.white.withOpacity(0.8),
@@ -224,6 +234,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ),
                               obscureText: obscureText,
+                              controller: passwordController,
                               keyboardType: TextInputType.visiblePassword,
                               textInputAction: TextInputAction.done,
                               style: TextStyle(
@@ -237,7 +248,30 @@ class _LoginScreenState extends State<LoginScreen> {
                         SizedBox(height: width * 0.064),
                         SizedBox(
                           width: width,
-                          child: ElevatedButton.icon(
+                          child: _isLoggingIn
+                              ? Container(
+                            width: width,
+                            height: width * 0.134,
+                            decoration: BoxDecoration(
+                              borderRadius:
+                              BorderRadius.circular(width * 0.036),
+                              color: Colors.white,
+                            ),
+                            child: Container(
+                              alignment: Alignment.center,
+                              child: SizedBox(
+                                width: width * 0.08,
+                                height: width * 0.08,
+                                child: const CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor:
+                                  AlwaysStoppedAnimation<Color>(
+                                      Colors.black87),
+                                ),
+                              ),
+                            ),
+                          )
+                              : ElevatedButton.icon(
                             onPressed: () {
                               _login();
                             },
