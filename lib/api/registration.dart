@@ -11,7 +11,7 @@ import 'package:sayble/screen/profile_screen.dart';
 import 'package:sayble/util/swipe_page_route.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class Register{
+class Register {
   static Future<void> verifyOtp(String otp, BuildContext context) async {
     try {
       final response = await http.post(
@@ -30,45 +30,55 @@ class Register{
           final responseData = jsonDecode(response.body);
 
           if (responseData["success"] == true) {
-            Navigator.pushReplacement(
-              context,
-              SwipePageRoute(
-                builder: (context) => const ProfileScreen(),
-                routeAnimation: RouteAnimation.horizontal,
-                currentChild: context.widget,
-              ),
-            );
+            if (context.mounted) {
+              Navigator.pushReplacement(
+                context,
+                SwipePageRoute(
+                  builder: (context) => const ProfileScreen(),
+                  routeAnimation: RouteAnimation.horizontal,
+                  currentChild: context.widget,
+                ),
+              );
+            }
           } else {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text("Invalid OTP"),
+                ),
+              );
+            }
+          }
+        } catch (e) {
+          if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text("Invalid OTP"),
+                content: Text("Unexpected response format"),
               ),
             );
           }
-        } catch (e) {
+        }
+      } else {
+        if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Unexpected response format"),
+            SnackBar(
+              content: Text(
+                "Failed to verify OTP. Status code: ${response.statusCode}",
+              ),
             ),
           );
         }
-      } else {
+      }
+    } catch (e) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-                "Failed to verify OTP. Status code: ${response.statusCode}"),
+            content: Text("An error occurred: $e"),
           ),
         );
       }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("An error occurred: $e"),
-        ),
-      );
     }
   }
-
 
   static Future<void> sendCode(String firstName, String lastName, String email, String dob, BuildContext context) async {
     final response = await http.post(
@@ -94,29 +104,35 @@ class Register{
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('apiToken', apiToken);
         Environment.userToken = apiToken;
-        Navigator.push(
-          context,
-          SwipePageRoute(
-            builder: (context) => VerificationOtpScreen(
-              email: email,
+        if (context.mounted) {
+          Navigator.push(
+            context,
+            SwipePageRoute(
+              builder: (context) => VerificationOtpScreen(
+                email: email,
+              ),
+              currentChild: const RegistrationScreen(),
+              routeAnimation: RouteAnimation.vertical,
             ),
-            currentChild: const RegistrationScreen(),
-            routeAnimation: RouteAnimation.vertical,
-          ),
-        );
+          );
+        }
       } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(responseData['message']),
+            ),
+          );
+        }
+      }
+    } else {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(responseData['message']),
+            content: Text("Failed to register: ${response.statusCode}"),
           ),
         );
       }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Failed to register: ${response.statusCode}"),
-        ),
-      );
       log(response.body);
     }
   }
@@ -129,30 +145,36 @@ class Register{
         'Authorization': 'Bearer ${Environment.userToken}',
       },
     );
-    if(response.statusCode == 200){
+    if (response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
-      if(responseData['success']){
+      if (responseData['success']) {
         log("OTP sent successfully");
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("OTP sent successfully"),
-          ),
-        );
-      }else{
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("OTP sent successfully"),
+            ),
+          );
+        }
+      } else {
         log("Failed to send OTP");
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Failed to send OTP"),
+            ),
+          );
+        }
+      }
+    } else {
+      log("Failed to send OTP. Status code: ${response.statusCode}");
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Failed to send OTP"),
+          SnackBar(
+            content: Text("Failed to send OTP. Status code: ${response.statusCode}"),
           ),
         );
       }
-    }else{
-      log("Failed to send OTP. Status code: ${response.statusCode}");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Failed to send OTP. Status code: ${response.statusCode}"),
-        ),
-      );
     }
   }
 }

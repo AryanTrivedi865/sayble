@@ -23,19 +23,18 @@ class Login {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.remove('apiToken');
       Environment.userToken = '';
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const WelcomeScreen(),
-        ),
-      );
+      if (context.mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const WelcomeScreen(),
+          ),
+        );
+      }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content:
-              Text("Failed to logout. Status code: ${response.statusCode}"),
-        ),
-      );
+      if (context.mounted) {
+        showSnackBar(context, "Failed to logout. Status code: ${response.statusCode}");
+      }
     }
   }
 
@@ -60,42 +59,35 @@ class Login {
             SharedPreferences prefs = await SharedPreferences.getInstance();
             prefs.setString('apiToken', responseData["token"]);
             Environment.userToken = responseData["token"];
-            Navigator.pushReplacement(
-              context,
-              SwipePageRoute(
-                routeAnimation: RouteAnimation.horizontal,
-                currentChild: context.widget,
-                builder: (context) => const ProfileScreen(),
-              ),
-            );
+            if (context.mounted) {
+              Navigator.pushReplacement(
+                context,
+                SwipePageRoute(
+                  routeAnimation: RouteAnimation.horizontal,
+                  currentChild: context.widget,
+                  builder: (context) => const ProfileScreen(),
+                ),
+              );
+            }
           } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text("Failed to login. Please try again later"),
-              ),
-            );
+            if (context.mounted) {
+              showSnackBar(context, "Failed to login. Please try again later");
+            }
           }
         } catch (e) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Unexpected response format"),
-            ),
-          );
+          if (context.mounted) {
+            showSnackBar(context, "Unexpected response format");
+          }
         }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                "Failed to login. Status code: ${response.statusCode}"),
-          ),
-        );
+        if (context.mounted) {
+          showSnackBar(context, "Failed to login. Status code: ${response.statusCode}");
+        }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Failed to login. Please try again later"),
-        ),
-      );
+      if (context.mounted) {
+        showSnackBar(context, "Failed to login. Please try again later");
+      }
     }
   }
 
@@ -116,39 +108,36 @@ class Login {
           final responseData = jsonDecode(response.body);
           log(responseData.toString());
           if (responseData["success"] == true) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text("Password reset mail sent to your email"),
-              ),
-            );
+            if (context.mounted) {
+              showSnackBar(context, "Password reset mail sent to your email");
+            }
           } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text("Failed to send password reset mail"),
-              ),
-            );
+            if (context.mounted) {
+              showSnackBar(context, "Failed to send password reset mail");
+            }
           }
         } catch (e) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Unexpected response format"),
-            ),
-          );
+          if (context.mounted) {
+            showSnackBar(context, "Unexpected response format");
+          }
         }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                "Failed to send password reset link. Status code: ${response.statusCode}"),
-          ),
-        );
+        if (context.mounted) {
+          showSnackBar(context, "Failed to send password reset link. Status code: ${response.statusCode}");
+        }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Failed to send password reset link"),
-        ),
-      );
+      if (context.mounted) {
+        showSnackBar(context, "An error occurred. Please try again later.");
+      }
     }
+  }
+
+  static void showSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+      ),
+    );
   }
 }
