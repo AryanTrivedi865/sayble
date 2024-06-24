@@ -6,32 +6,36 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:sayble/api/login.dart';
 import 'package:sayble/api/user.dart';
 import 'package:sayble/models/user_model.dart';
 import 'package:sayble/screen/profile_tabs/posts_screen.dart';
+import 'package:sayble/screen/settings.dart';
+import 'package:sayble/util/page_route.dart';
 
-class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+class UserProfileScreen extends StatefulWidget {
+  const UserProfileScreen({super.key, required this.userId});
+
+  final String userId;
 
   static const platform = MethodChannel('com.aryan.sayble/share');
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
+  State<UserProfileScreen> createState() => _UserProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _UserProfileScreenState extends State<UserProfileScreen> {
   late Future<UserModel> _userFuture;
 
   @override
   void initState() {
-    _userFuture = User.getCurrentUser();
+    _userFuture = User.getUserById(widget.userId);
     super.initState();
   }
 
   Future<void> _shareText(String text, BuildContext context) async {
     try {
-      await ProfileScreen.platform.invokeMethod('shareText', {'text': text});
+      await UserProfileScreen.platform
+          .invokeMethod('shareText', {'text': text});
     } on PlatformException catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -44,9 +48,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _refresh() async {
-    setState(() {
-      _userFuture = User.getCurrentUser();
-    });
+    setState(
+      () {
+        _userFuture = User.getUserById(widget.userId);
+      },
+    );
   }
 
   @override
@@ -57,7 +63,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return FutureBuilder<UserModel>(
       future: _userFuture,
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+        if (snapshot.connectionState == ConnectionState.waiting &&
+            !snapshot.hasData) {
           return const Scaffold(
             body: Center(
               child: CircularProgressIndicator(),
@@ -66,15 +73,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
         } else if (snapshot.hasError) {
           log('Error: ${snapshot.error}');
           return Scaffold(
-            body: Center(
-              child: Text(
-                'Error: ${snapshot.error}',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: width * 0.048,
-                  fontWeight: FontWeight.w400,
+            body: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Error: ${snapshot.error}',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: width * 0.048,
+                    fontWeight: FontWeight.w400,
+                  ),
                 ),
-              ),
+                const SizedBox(height: 16),
+                FilledButton(
+                  onPressed: _refresh,
+                  child: const Text('Retry'),
+                ),
+              ],
             ),
           );
         } else if (!snapshot.hasData) {
@@ -86,7 +101,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
           length: 3,
           child: Scaffold(
             appBar: AppBar(
-              leading: const Icon(CupertinoIcons.back),
+              leading: IconButton(
+                icon: const Icon(CupertinoIcons.back),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
               title: Text(
                 user.username!,
                 style: GoogleFonts.fredoka(
@@ -100,7 +120,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 IconButton(
                   icon: const Icon(CupertinoIcons.gear),
                   onPressed: () {
-                    Login.logout(context);
+                    Navigator.push(
+                      context,
+                      SwipePageRoute(
+                          builder: (context) => const SettingsScreen(),
+                          routeAnimation: RouteAnimation.horizontal,
+                          currentChild: widget),
+                    );
                   },
                 ),
               ],
@@ -127,43 +153,74 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   borderRadius:
                                       BorderRadius.circular(width * 0.1),
                                   onLongPress: () {
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) {
-                                        return BackdropFilter(
-                                          filter: ImageFilter.blur(
-                                              sigmaX: 10, sigmaY: 10),
-                                          child: AlertDialog(
-                                            contentPadding: EdgeInsets.zero,
-                                            content: Container(
-                                              width: width * 0.8,
-                                              height: height * 0.6,
-                                              decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(
-                                                        width * 0.02),
-                                                image: DecorationImage(
-                                                  image: user.image != null
-                                                      ? NetworkImage(
-                                                          user.image!)
-                                                      : const AssetImage(
-                                                              "lib/assets/jpegs/profile.jpg")
-                                                          as ImageProvider,
-                                                  fit: BoxFit.cover,
+                                    Navigator.push(
+                                      context,
+                                      PageRouteBuilder(
+                                        opaque: false,
+                                        barrierDismissible: true,
+                                        pageBuilder:
+                                            (BuildContext context, _, __) {
+                                          return BackdropFilter(
+                                            filter: ImageFilter.blur(
+                                              sigmaX: 10,
+                                              sigmaY: 10,
+                                            ),
+                                            child: Center(
+                                              child: Hero(
+                                                tag: "profile_image",
+                                                child: ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          width * 0.072),
+                                                  child:
+                                                      FadeInImage.assetNetwork(
+                                                    placeholder:
+                                                        "lib/assets/jpegs/profile.jpg",
+                                                    image: user.image ?? "",
+                                                    width: width * 0.8,
+                                                    height: height * 0.6,
+                                                    fit: BoxFit.cover,
+                                                    imageErrorBuilder: (context,
+                                                        error, stack) {
+                                                      return Image.asset(
+                                                        "lib/assets/jpegs/profile.jpg",
+                                                        width: width * 0.8,
+                                                        height: width * 0.6,
+                                                        fit: BoxFit.cover,
+                                                      );
+                                                    },
+                                                  ),
                                                 ),
                                               ),
                                             ),
-                                          ),
-                                        );
-                                      },
+                                          );
+                                        },
+                                      ),
                                     );
                                   },
-                                  child: CircleAvatar(
-                                    radius: width * 0.1,
-                                    backgroundImage: user.image != null
-                                        ? NetworkImage(user.image!)
-                                        : const AssetImage(
-                                            "lib/assets/jpegs/profile.jpg"),
+                                  child: Hero(
+                                    tag: "profile_image",
+                                    child: ClipRRect(
+                                      borderRadius:
+                                          BorderRadius.circular(width * 0.12),
+                                      child: FadeInImage.assetNetwork(
+                                        placeholder:
+                                            "lib/assets/jpegs/profile.jpg",
+                                        image: user.image ?? "",
+                                        width: width * 0.2,
+                                        height: width * 0.2,
+                                        fit: BoxFit.cover,
+                                        imageErrorBuilder:
+                                            (context, error, stack) {
+                                          return Image.asset(
+                                            "lib/assets/jpegs/profile.jpg",
+                                            width: width * 0.2,
+                                            height: width * 0.2,
+                                            fit: BoxFit.cover,
+                                          );
+                                        },
+                                      ),
+                                    ),
                                   ),
                                 ),
                                 Positioned(
@@ -218,10 +275,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                                         .camera);
                                                     if (image != null) {
                                                       User.uploadProfileImage(
-                                                          image.path);
-                                                      if (context.mounted) {
-                                                        Navigator.pop(context);
-                                                      }
+                                                              image.path)
+                                                          .then(
+                                                        (value) {
+                                                          if (context.mounted) {
+                                                            Navigator.pop(
+                                                                context);
+                                                            ScaffoldMessenger
+                                                                    .of(context)
+                                                                .showSnackBar(
+                                                              const SnackBar(
+                                                                content: Text(
+                                                                    'Profile picture updated'),
+                                                              ),
+                                                            );
+                                                            _refresh();
+                                                          }
+                                                        },
+                                                      );
                                                     }
                                                   },
                                                   child: Container(
@@ -253,10 +324,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                                         .gallery);
                                                     if (image != null) {
                                                       User.uploadProfileImage(
-                                                          image.path);
-                                                      if (context.mounted) {
-                                                        Navigator.pop(context);
-                                                      }
+                                                              image.path)
+                                                          .then(
+                                                        (value) {
+                                                          if (context.mounted) {
+                                                            Navigator.pop(
+                                                                context);
+                                                            ScaffoldMessenger
+                                                                    .of(context)
+                                                                .showSnackBar(
+                                                              const SnackBar(
+                                                                content: Text(
+                                                                    'Profile picture updated'),
+                                                              ),
+                                                            );
+                                                            _refresh();
+                                                          }
+                                                        },
+                                                      );
                                                     }
                                                   },
                                                   child: Container(
@@ -294,7 +379,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                         SizedBox(
                                                             width:
                                                                 width * 0.04),
-                                                        const Text('Cancel'),
+                                                        const Text(
+                                                            'Delete existing profile picture'),
                                                       ],
                                                     ),
                                                   ),
