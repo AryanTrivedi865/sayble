@@ -7,8 +7,9 @@ import 'package:http/http.dart' as http;
 import 'package:sayble/api/environment.dart';
 import 'package:sayble/screen/auth/registration_screen.dart';
 import 'package:sayble/screen/auth/verification_otp_screen.dart';
-import 'package:sayble/screen/profile_screen.dart';
-import 'package:sayble/util/swipe_page_route.dart';
+import 'package:sayble/screen/parent_bottom_screen/home_screen.dart';
+import 'package:sayble/screen/profile_tabs/profile_screen.dart';
+import 'package:sayble/util/page_route.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Register {
@@ -34,7 +35,7 @@ class Register {
               Navigator.pushReplacement(
                 context,
                 SwipePageRoute(
-                  builder: (context) => const ProfileScreen(),
+                  builder: (context) => const HomeScreen(),
                   routeAnimation: RouteAnimation.horizontal,
                   currentChild: context.widget,
                 ),

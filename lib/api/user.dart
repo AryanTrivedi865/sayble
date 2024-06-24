@@ -25,6 +25,23 @@ class User {
     }
   }
 
+  static Future<UserModel> getUserById(String id) async {
+    final response = await http.get(
+      Uri.parse("${Environment.apiUrl}/users/$id"),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+    );
+    log(response.body);
+    if (response.statusCode == 200) {
+      final responseData = jsonDecode(response.body);
+      Map<String, dynamic> user = responseData;
+      return UserModel.fromJson(user);
+    } else {
+      throw Exception('Failed to load user');
+    }
+  }
+
   static Future<void> uploadProfileImage(String imagePath) async {
     File imageFile = File(imagePath);
     String extension = imageFile.path.split('.').last;

@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:developer';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -5,21 +7,21 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:sayble/fonts/sayble_icons.dart';
 import 'package:sayble/screen/auth/login_screen.dart';
 import 'package:sayble/screen/auth/registration_screen.dart';
-import 'package:sayble/util/swipe_page_route.dart';
+import 'package:sayble/util/page_route.dart';
+import 'package:uni_links/uni_links.dart';
 
-class WelcomeScreen extends StatelessWidget {
+class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
 
   @override
+  State<WelcomeScreen> createState() => _WelcomeScreenState();
+}
+
+class _WelcomeScreenState extends State<WelcomeScreen> {
+  @override
   Widget build(BuildContext context) {
-    double width = MediaQuery
-        .of(context)
-        .size
-        .width;
-    double height = MediaQuery
-        .of(context)
-        .size
-        .height;
+    double width = MediaQuery.of(context).size.width;
+    double height = MediaQuery.of(context).size.height;
     return Scaffold(
       body: Stack(
         children: [
@@ -62,9 +64,7 @@ class WelcomeScreen extends StatelessWidget {
                     style: TextStyle(
                       color: Colors.white.withOpacity(0.8),
                       fontSize: width * 0.056,
-                      fontFamily: GoogleFonts
-                          .aBeeZee()
-                          .fontFamily,
+                      fontFamily: GoogleFonts.aBeeZee().fontFamily,
                       fontWeight: FontWeight.w400,
                     ),
                   ),
@@ -90,9 +90,7 @@ class WelcomeScreen extends StatelessWidget {
                         color: Colors.white,
                         fontSize: width * 0.16,
                         letterSpacing: 1.2,
-                        fontFamily: GoogleFonts
-                            .aBeeZee()
-                            .fontFamily,
+                        fontFamily: GoogleFonts.aBeeZee().fontFamily,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -114,9 +112,8 @@ class WelcomeScreen extends StatelessWidget {
                         Navigator.push(
                           context,
                           SwipePageRoute(
-                            builder: (context) =>
-                            const RegistrationScreen(),
-                            currentChild: this,
+                            builder: (context) => const RegistrationScreen(),
+                            currentChild: widget,
                             routeAnimation: RouteAnimation.horizontal,
                           ),
                         );
@@ -145,9 +142,7 @@ class WelcomeScreen extends StatelessWidget {
                       text: "Already on Sayble? ",
                       style: TextStyle(
                         fontSize: width * 0.042,
-                        fontFamily: GoogleFonts
-                            .fredoka()
-                            .fontFamily,
+                        fontFamily: GoogleFonts.fredoka().fontFamily,
                         fontWeight: FontWeight.w400,
                       ),
                       children: [
@@ -159,7 +154,7 @@ class WelcomeScreen extends StatelessWidget {
                                 context,
                                 SwipePageRoute(
                                   builder: (context) => const LoginScreen(),
-                                  currentChild: this,
+                                  currentChild: widget,
                                   routeAnimation: RouteAnimation.horizontal,
                                 ),
                               );
@@ -167,9 +162,7 @@ class WelcomeScreen extends StatelessWidget {
                           style: TextStyle(
                             decoration: TextDecoration.underline,
                             fontSize: width * 0.042,
-                            fontFamily: GoogleFonts
-                                .fredoka()
-                                .fontFamily,
+                            fontFamily: GoogleFonts.fredoka().fontFamily,
                             fontWeight: FontWeight.w500,
                           ),
                         ),

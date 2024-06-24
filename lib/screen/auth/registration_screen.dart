@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:sayble/api/registration.dart';
 import 'package:sayble/fonts/sayble_icons.dart';
 import 'package:sayble/screen/auth/login_screen.dart';
-import 'package:sayble/util/swipe_page_route.dart';
+import 'package:sayble/util/page_route.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});

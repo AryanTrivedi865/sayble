@@ -4,9 +4,10 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:sayble/api/environment.dart';
-import 'package:sayble/screen/profile_screen.dart';
+import 'package:sayble/screen/parent_bottom_screen/home_screen.dart';
+import 'package:sayble/screen/profile_tabs/profile_screen.dart';
 import 'package:sayble/screen/welcome_screen.dart';
-import 'package:sayble/util/swipe_page_route.dart';
+import 'package:sayble/util/page_route.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Login {
@@ -65,7 +66,7 @@ class Login {
                 SwipePageRoute(
                   routeAnimation: RouteAnimation.horizontal,
                   currentChild: context.widget,
-                  builder: (context) => const ProfileScreen(),
+                  builder: (context) => const HomeScreen(),
                 ),
               );
             }

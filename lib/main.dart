@@ -1,19 +1,24 @@
+import 'dart:async';
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sayble/api/environment.dart';
-import 'package:sayble/screen/profile_screen.dart';
+import 'package:sayble/screen/parent_screen.dart';
+import 'package:sayble/screen/profile_tabs/profile_screen.dart';
+import 'package:sayble/screen/profile_tabs/user_profile.dart';
 import 'package:sayble/screen/welcome_screen.dart';
 import 'package:sayble/themes/theme.dart';
 import 'package:sayble/themes/util.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uni_links/uni_links.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      systemNavigationBarColor: Colors.transparent,
+      statusBarColor: Color(0xff141313),
+      systemNavigationBarColor: Color(0xff141313),
     ),
   );
 
@@ -31,12 +36,28 @@ void main() async {
   runApp(const Sayble());
 }
 
-class Sayble extends StatelessWidget {
+class Sayble extends StatefulWidget {
   const Sayble({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  State<Sayble> createState() => _SaybleState();
+}
 
+class _SaybleState extends State<Sayble> {
+
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     TextTheme textTheme = createTextTheme(context, "Fredoka", "ABeeZee");
     MaterialTheme theme = MaterialTheme(textTheme);
 
@@ -46,7 +67,9 @@ class Sayble extends StatelessWidget {
       theme: theme.light(),
       darkTheme: theme.dark(),
       themeMode: ThemeMode.dark,
-      home: Environment.userToken.isEmpty ? const WelcomeScreen() : const ProfileScreen(),
+      home: Environment.userToken.isEmpty
+          ? const WelcomeScreen()
+          : const ParentScreen(),
     );
   }
 }
